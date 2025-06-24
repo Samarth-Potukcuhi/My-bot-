@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Samarth's AI Chat 🤖</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+    #chat-box { width: 90%; max-width: 600px; height: 500px; overflow-y: auto; border: 1px solid #ccc; background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+    .message { margin: 10px 0; }
+    .user { color: blue; text-align: right; }
+    .bot { color: green; text-align: left; }
+    #input-area { display: flex; width: 90%; max-width: 600px; }
+    #user-input { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    #send-btn { padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; margin-left: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Samarth's AI Chat 🤖</h1>
+  <div id="chat-box"></div>
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="Ask me anything...">
+    <button id="send-btn">Send</button>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function getAIResponse(message) {
+      appendMessage("You: " + message, "user");
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer YOUR_OPENAI_API_KEY"
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: "You are Samarth's custom assistant. Be friendly, witty, and clever." },
+              { role: "user", content: message }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        const botReply = data.choices[0].message.content;
+        appendMessage("Samarth: " + botReply, "bot");
+      } catch (error) {
+        appendMessage("Samarth: Oops! Something went wrong.", "bot");
+      }
+    }
+
+    sendBtn.onclick = () => {
+      const message = userInput.value.trim();
+      if (!message) return;
+      getAIResponse(message);
+      userInput.value = "";
+    };
+
+    userInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendBtn.click();
+    });
+  </script>
+</body>
+</html>
